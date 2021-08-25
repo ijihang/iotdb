@@ -649,4 +649,19 @@ public class RawQueryDataSetWithoutValueFilter extends QueryDataSet
       timeHeap.add(cachedBatchDataArray[seriesIndex].currentTime());
     }
   }
+
+  public RowRecord next() throws IOException {
+    if (rowLimit + rowOffset > 0) {
+      alreadyReturnedRowNum++;
+    }
+    return nextWithoutConstraint();
+  }
+
+  public boolean hasNext() throws IOException {
+
+    if (rowLimit > 0 && alreadyReturnedRowNum >= rowLimit + rowOffset) {
+      return false;
+    }
+    return hasNextWithoutConstraint();
+  }
 }

@@ -29,6 +29,7 @@ import org.apache.iotdb.tsfile.file.metadata.enums.TSDataType;
 import org.apache.iotdb.tsfile.read.common.RowRecord;
 import org.apache.iotdb.tsfile.read.query.dataset.QueryDataSet;
 import org.apache.iotdb.tsfile.utils.Binary;
+import org.apache.iotdb.tsfile.utils.RowRecordComparator;
 
 import org.apache.thrift.TException;
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.PriorityQueue;
 import java.util.TreeMap;
 
 public class IoTDBDatabaseMetadata implements DatabaseMetaData {
@@ -521,70 +523,129 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
       byteArrayOutputStreams[i] = new ByteArrayOutputStream();
       dataOutputStreams[i] = new DataOutputStream(byteArrayOutputStreams[i]);
     }
+
     int rowCount = 0;
     int[] valueOccupation = new int[columnNum];
     // used to record a bitmap for every 8 row record
     int[] bitmap = new int[columnNum];
+
+    int initCapacityQueue = queryDataSet.getRowLimit() + queryDataSet.getRowOffset();
+    boolean isAscending = queryDataSet.isAscending();
+    PriorityQueue<RowRecord> rowRecordQueue;
+    RowRecordComparator rowRecordAscComparator = new RowRecordComparator(true);
+    RowRecordComparator rowRecordDescComparator = new RowRecordComparator(false);
+    if (isAscending) {
+      rowRecordQueue = new PriorityQueue<>(rowRecordDescComparator);
+    } else {
+      rowRecordQueue = new PriorityQueue<>(rowRecordAscComparator);
+    }
     for (int i = 0; i < fetchSize; i++) {
       if (queryDataSet.hasNext()) {
         RowRecord rowRecord = queryDataSet.next();
+        // filter rows whose columns are null according to the rule
+        if ((queryDataSet.isWithoutAllNull() && rowRecord.isAllNull())
+            || (queryDataSet.isWithoutAnyNull() && rowRecord.hasNullField())) {
+          // if the current RowRecord doesn't satisfy, we should also decrease AlreadyReturnedRowNum
+          queryDataSet.decreaseAlreadyReturnedRowNum();
+          i--;
+          continue;
+        }
         if (watermarkEncoder != null) {
           rowRecord = watermarkEncoder.encodeRecord(rowRecord);
         }
-        // use columnOutput to write byte array
-        dataOutputStreams[0].writeLong(rowRecord.getTimestamp());
-        List<org.apache.iotdb.tsfile.read.common.Field> fields = rowRecord.getFields();
-        for (int k = 0; k < fields.size(); k++) {
-          org.apache.iotdb.tsfile.read.common.Field field = fields.get(k);
-          DataOutputStream dataOutputStream = dataOutputStreams[2 * k + 1]; // DO NOT FORGET +1
-          if (field == null || field.getDataType() == null) {
-            bitmap[k] = (bitmap[k] << 1);
-          } else {
-            bitmap[k] = (bitmap[k] << 1) | 0x01;
-            TSDataType type = field.getDataType();
-            switch (type) {
-              case INT32:
-                dataOutputStream.writeInt(field.getIntV());
-                valueOccupation[k] += 4;
-                break;
-              case INT64:
-                dataOutputStream.writeLong(field.getLongV());
-                valueOccupation[k] += 8;
-                break;
-              case FLOAT:
-                dataOutputStream.writeFloat(field.getFloatV());
-                valueOccupation[k] += 4;
-                break;
-              case DOUBLE:
-                dataOutputStream.writeDouble(field.getDoubleV());
-                valueOccupation[k] += 8;
-                break;
-              case BOOLEAN:
-                dataOutputStream.writeBoolean(field.getBoolV());
-                valueOccupation[k] += 1;
-                break;
-              case TEXT:
-                dataOutputStream.writeInt(field.getBinaryV().getLength());
-                dataOutputStream.write(field.getBinaryV().getValues());
-                valueOccupation[k] = valueOccupation[k] + 4 + field.getBinaryV().getLength();
-                break;
-              default:
-                throw new UnSupportedDataTypeException(
-                    String.format("Data type %s is not supported.", type));
+        if (initCapacityQueue == 0) {
+          rowRecordQueue.offer(rowRecord);
+        } else {
+          if (queryDataSet.isAscending()) {
+            if (rowRecordQueue.size() < initCapacityQueue
+                || rowRecordQueue.peek().getTimestamp() >= rowRecord.getTimestamp()) {
+              rowRecordQueue.offer(rowRecord);
+              if (rowRecordQueue.size() > initCapacityQueue) {
+                rowRecordQueue.poll();
+              }
             }
-          }
-        }
-        rowCount++;
-        if (rowCount % 8 == 0) {
-          for (int j = 0; j < bitmap.length; j++) {
-            DataOutputStream dataBitmapOutputStream = dataOutputStreams[2 * (j + 1)];
-            dataBitmapOutputStream.writeByte(bitmap[j]);
-            // we should clear the bitmap every 8 row record
-            bitmap[j] = 0;
+          } else {
+            if (rowRecordQueue.size() < initCapacityQueue
+                || rowRecordQueue.peek().getTimestamp() <= rowRecord.getTimestamp()) {
+              rowRecordQueue.offer(rowRecord);
+              if (rowRecordQueue.size() > initCapacityQueue) {
+                rowRecordQueue.poll();
+              }
+            }
           }
         }
       } else {
         break;
+      }
+    }
+
+    Object[] array = rowRecordQueue.toArray();
+    if (isAscending) {
+      Arrays.sort(array, rowRecordAscComparator);
+    } else {
+      Arrays.sort(array, rowRecordDescComparator);
+    }
+    int rowOffset = 0;
+    for (Object object : array) {
+      if (queryDataSet.getRowOffset() > 0 && rowOffset < queryDataSet.getRowOffset()) {
+        rowOffset++;
+        continue;
+      }
+      if (queryDataSet.getRowLimit() > 0 && rowCount == queryDataSet.getRowLimit()) {
+        break;
+      }
+      RowRecord rowRecord = (RowRecord) object;
+      // use columnOutput to write byte array
+      dataOutputStreams[0].writeLong(rowRecord.getTimestamp());
+      List<org.apache.iotdb.tsfile.read.common.Field> fields = rowRecord.getFields();
+      for (int k = 0; k < fields.size(); k++) {
+        org.apache.iotdb.tsfile.read.common.Field field = fields.get(k);
+        DataOutputStream dataOutputStream = dataOutputStreams[2 * k + 1]; // DO NOT FORGET +1
+        if (field == null || field.getDataType() == null) {
+          bitmap[k] = (bitmap[k] << 1);
+        } else {
+          bitmap[k] = (bitmap[k] << 1) | 0x01;
+          TSDataType type = field.getDataType();
+          switch (type) {
+            case INT32:
+              dataOutputStream.writeInt(field.getIntV());
+              valueOccupation[k] += 4;
+              break;
+            case INT64:
+              dataOutputStream.writeLong(field.getLongV());
+              valueOccupation[k] += 8;
+              break;
+            case FLOAT:
+              dataOutputStream.writeFloat(field.getFloatV());
+              valueOccupation[k] += 4;
+              break;
+            case DOUBLE:
+              dataOutputStream.writeDouble(field.getDoubleV());
+              valueOccupation[k] += 8;
+              break;
+            case BOOLEAN:
+              dataOutputStream.writeBoolean(field.getBoolV());
+              valueOccupation[k] += 1;
+              break;
+            case TEXT:
+              dataOutputStream.writeInt(field.getBinaryV().getLength());
+              dataOutputStream.write(field.getBinaryV().getValues());
+              valueOccupation[k] = valueOccupation[k] + 4 + field.getBinaryV().getLength();
+              break;
+            default:
+              throw new UnSupportedDataTypeException(
+                  String.format("Data type %s is not supported.", type));
+          }
+        }
+      }
+      rowCount++;
+      if (rowCount % 8 == 0) {
+        for (int j = 0; j < bitmap.length; j++) {
+          DataOutputStream dataBitmapOutputStream = dataOutputStreams[2 * (j + 1)];
+          dataBitmapOutputStream.writeByte(bitmap[j]);
+          // we should clear the bitmap every 8 row record
+          bitmap[j] = 0;
+        }
       }
     }
 
@@ -596,6 +657,7 @@ public class IoTDBDatabaseMetadata implements DatabaseMetaData {
         dataBitmapOutputStream.writeByte(bitmap[j] << (8 - remaining));
       }
     }
+
     // calculate the time buffer size
     int timeOccupation = rowCount * 8;
     ByteBuffer timeBuffer = ByteBuffer.allocate(timeOccupation);

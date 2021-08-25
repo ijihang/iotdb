@@ -81,7 +81,7 @@ public class AlignByDeviceDataSet extends QueryDataSet {
 
   public AlignByDeviceDataSet(
       AlignByDevicePlan alignByDevicePlan, QueryContext context, IQueryRouter queryRouter) {
-    super(null, alignByDevicePlan.getDataTypes());
+    super(null, alignByDevicePlan.getDataTypes(), alignByDevicePlan.isAscending());
 
     this.measurements = alignByDevicePlan.getMeasurements();
     this.devices = alignByDevicePlan.getDevices();
@@ -200,6 +200,8 @@ public class AlignByDeviceDataSet extends QueryDataSet {
             rawDataQueryPlan.setExpression(expression);
             rawDataQueryPlan.transformPaths(IoTDB.metaManager);
             currentDataSet = queryRouter.rawDataQuery(rawDataQueryPlan, context);
+            currentDataSet.setRowOffset(rowOffset);
+            currentDataSet.setRowLimit(rowLimit);
             break;
           default:
             throw new IOException("unsupported DataSetType");
@@ -294,5 +296,14 @@ public class AlignByDeviceDataSet extends QueryDataSet {
     AGGREGATE,
     FILL,
     QUERY
+  }
+
+  public boolean hasNext() throws IOException {
+    return hasNextWithoutConstraint();
+  }
+
+  /** This method is used for batch query, return RowRecord. */
+  public RowRecord next() throws IOException {
+    return nextWithoutConstraint();
   }
 }

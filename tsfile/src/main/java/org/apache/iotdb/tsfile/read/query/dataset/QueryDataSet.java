@@ -198,4 +198,12 @@ public abstract class QueryDataSet {
   public void decreaseAlreadyReturnedRowNum() {
     alreadyReturnedRowNum--;
   }
+
+  public boolean isAscending() {
+    return ascending;
+  }
+
+  public void setAscending(boolean ascending) {
+    this.ascending = ascending;
+  }
 }

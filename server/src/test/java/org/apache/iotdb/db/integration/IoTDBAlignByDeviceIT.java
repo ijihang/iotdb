@@ -136,25 +136,25 @@ public class IoTDBAlignByDeviceIT {
   public void selectTest() throws ClassNotFoundException {
     String[] retArray =
         new String[] {
-          "1,root.vehicle.d0,101,1101,null,null,null,",
-          "2,root.vehicle.d0,10000,40000,2.22,null,null,",
-          "3,root.vehicle.d0,null,null,3.33,null,null,",
-          "4,root.vehicle.d0,null,null,4.44,null,null,",
-          "50,root.vehicle.d0,10000,50000,null,null,null,",
-          "60,root.vehicle.d0,null,null,null,aaaaa,null,",
-          "70,root.vehicle.d0,null,null,null,bbbbb,null,",
-          "80,root.vehicle.d0,null,null,null,ccccc,null,",
-          "100,root.vehicle.d0,99,199,null,null,true,",
-          "101,root.vehicle.d0,99,199,null,ddddd,null,",
-          "102,root.vehicle.d0,80,180,10.0,fffff,null,",
-          "103,root.vehicle.d0,99,199,null,null,null,",
-          "104,root.vehicle.d0,90,190,null,null,null,",
-          "105,root.vehicle.d0,99,199,11.11,null,null,",
-          "106,root.vehicle.d0,99,null,null,null,null,",
-          "1000,root.vehicle.d0,22222,55555,1000.11,null,null,",
-          "946684800000,root.vehicle.d0,null,100,null,good,null,",
-          "1,root.vehicle.d1,999,null,null,null,null,",
-          "1000,root.vehicle.d1,888,null,null,null,null,",
+          "1,root.vehicle.d0,null,null,101,1101,null,",
+          "1,root.vehicle.d1,null,null,999,null,null,",
+          "2,root.vehicle.d0,null,null,10000,40000,2.22,",
+          "3,root.vehicle.d0,null,null,null,null,3.33,",
+          "4,root.vehicle.d0,null,null,null,null,4.44,",
+          "50,root.vehicle.d0,null,null,10000,50000,null,",
+          "60,root.vehicle.d0,aaaaa,null,null,null,null,",
+          "70,root.vehicle.d0,bbbbb,null,null,null,null,",
+          "80,root.vehicle.d0,ccccc,null,null,null,null,",
+          "100,root.vehicle.d0,null,true,99,199,null,",
+          "101,root.vehicle.d0,ddddd,null,99,199,null,",
+          "102,root.vehicle.d0,fffff,null,80,180,10.0,",
+          "103,root.vehicle.d0,null,null,99,199,null,",
+          "104,root.vehicle.d0,null,null,90,190,null,",
+          "105,root.vehicle.d0,null,null,99,199,11.11,",
+          "106,root.vehicle.d0,null,null,99,null,null,",
+          "1000,root.vehicle.d0,null,null,22222,55555,1000.11,",
+          "1000,root.vehicle.d1,null,null,888,null,null,",
+          "946684800000,root.vehicle.d0,good,null,null,100,null,",
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -170,15 +170,15 @@ public class IoTDBAlignByDeviceIT {
         List<Integer> actualIndexToExpectedIndexList =
             checkHeader(
                 resultSetMetaData,
-                "Time,Device,s0,s1,s2,s3,s4",
+                "Time,Device,s3,s4,s0,s1,s2",
                 new int[] {
                   Types.TIMESTAMP,
                   Types.VARCHAR,
+                  Types.VARCHAR,
+                  Types.BOOLEAN,
                   Types.INTEGER,
                   Types.BIGINT,
-                  Types.FLOAT,
-                  Types.VARCHAR,
-                  Types.BOOLEAN
+                  Types.FLOAT
                 });
 
         int cnt = 0;
@@ -208,6 +208,7 @@ public class IoTDBAlignByDeviceIT {
     String[] retArray =
         new String[] {
           "1,root.vehicle.d0,101,101,1101,",
+          "1,root.vehicle.d1,999,999,null,",
           "2,root.vehicle.d0,10000,10000,40000,",
           "50,root.vehicle.d0,10000,10000,50000,",
           "100,root.vehicle.d0,99,99,199,",
@@ -218,9 +219,8 @@ public class IoTDBAlignByDeviceIT {
           "105,root.vehicle.d0,99,99,199,",
           "106,root.vehicle.d0,99,99,null,",
           "1000,root.vehicle.d0,22222,22222,55555,",
+          "1000,root.vehicle.d1,888,888,null,",
           "946684800000,root.vehicle.d0,null,null,100,",
-          "1,root.vehicle.d1,999,999,null,",
-          "1000,root.vehicle.d1,888,888,null,"
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -269,6 +269,7 @@ public class IoTDBAlignByDeviceIT {
   public void selectLimitTest() throws ClassNotFoundException {
     String[] retArray =
         new String[] {
+          "1,root.vehicle.d1,999,999,null,",
           "2,root.vehicle.d0,10000,10000,40000,",
           "50,root.vehicle.d0,10000,10000,50000,",
           "100,root.vehicle.d0,99,99,199,",
@@ -278,7 +279,6 @@ public class IoTDBAlignByDeviceIT {
           "104,root.vehicle.d0,90,90,190,",
           "105,root.vehicle.d0,99,99,199,",
           "106,root.vehicle.d0,99,99,null,",
-          "1000,root.vehicle.d0,22222,22222,55555,",
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -328,6 +328,7 @@ public class IoTDBAlignByDeviceIT {
     String[] retArray =
         new String[] {
           "1,root.vehicle.d0,101,1101,",
+          "1,root.vehicle.d1,999,null,",
           "2,root.vehicle.d0,10000,40000,",
           "50,root.vehicle.d0,10000,50000,",
           "100,root.vehicle.d0,99,199,",
@@ -338,9 +339,8 @@ public class IoTDBAlignByDeviceIT {
           "105,root.vehicle.d0,99,199,",
           "106,root.vehicle.d0,99,null,",
           "1000,root.vehicle.d0,22222,55555,",
+          "1000,root.vehicle.d1,888,null,",
           "946684800000,root.vehicle.d0,null,100,",
-          "1,root.vehicle.d1,999,null,",
-          "1000,root.vehicle.d1,888,null,"
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -449,7 +449,7 @@ public class IoTDBAlignByDeviceIT {
   @Test
   public void aggregateTest() throws ClassNotFoundException {
     String[] retArray =
-        new String[] {"root.vehicle.d1,2,null,null,null,null,", "root.vehicle.d0,11,11,6,6,1,"};
+        new String[] {"root.vehicle.d0,11,11,6,6,1,", "root.vehicle.d1,2,null,null,null,null,"};
 
     Class.forName(Config.JDBC_DRIVER_NAME);
     try (Connection connection =
@@ -503,12 +503,12 @@ public class IoTDBAlignByDeviceIT {
   public void groupByTimeTest() throws ClassNotFoundException {
     String[] retArray =
         new String[] {
-          "2,root.vehicle.d0,1,1,3,0,0,",
+          "2,root.vehicle.d0,0,0,1,1,3,",
+          "2,root.vehicle.d1,null,null,0,null,null,",
           "22,root.vehicle.d0,0,0,0,0,0,",
+          "22,root.vehicle.d1,null,null,0,null,null,",
           "42,root.vehicle.d0,0,0,0,0,0,",
-          "2,root.vehicle.d1,0,null,null,null,null,",
-          "22,root.vehicle.d1,0,null,null,null,null,",
-          "42,root.vehicle.d1,0,null,null,null,null,",
+          "42,root.vehicle.d1,null,null,0,null,null,",
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -526,7 +526,7 @@ public class IoTDBAlignByDeviceIT {
         List<Integer> actualIndexToExpectedIndexList =
             checkHeader(
                 resultSetMetaData,
-                "Time,Device,count(s0),count(s1),count(s2),count(s3),count(s4)",
+                "Time,Device,count(s3),count(s4),count(s0),count(s1),count(s2)",
                 new int[] {
                   Types.TIMESTAMP,
                   Types.VARCHAR,
@@ -752,11 +752,11 @@ public class IoTDBAlignByDeviceIT {
   public void unusualCaseTest2() throws ClassNotFoundException {
     String[] retArray =
         new String[] {
-          "1,root.vehicle.d0,101,101,1101,101,1101,null,null,null,",
-          "2,root.vehicle.d0,10000,10000,40000,10000,40000,2.22,null,null,",
-          "3,root.vehicle.d0,null,null,null,null,null,3.33,null,null,",
-          "4,root.vehicle.d0,null,null,null,null,null,4.44,null,null,",
-          "1,root.vehicle.d1,999,999,null,999,null,null,null,null,"
+          "1,root.vehicle.d0,101,101,1101,null,null,101,1101,null,",
+          "1,root.vehicle.d1,999,999,null,null,null,999,null,null,",
+          "2,root.vehicle.d0,10000,10000,40000,null,null,10000,40000,2.22,",
+          "3,root.vehicle.d0,null,null,null,null,null,null,null,3.33,",
+          "4,root.vehicle.d0,null,null,null,null,null,null,null,4.44,",
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -776,18 +776,18 @@ public class IoTDBAlignByDeviceIT {
         List<Integer> actualIndexToExpectedIndexList =
             checkHeader(
                 resultSetMetaData,
-                "Time,Device,s0,s0,s1,s0,s1,s2,s3,s4",
+                "Time,Device,s0,s0,s1,s3,s4,s0,s1,s2",
                 new int[] {
                   Types.TIMESTAMP,
                   Types.VARCHAR,
                   Types.INTEGER,
                   Types.INTEGER,
                   Types.BIGINT,
-                  Types.INTEGER,
-                  Types.BIGINT,
-                  Types.FLOAT,
                   Types.VARCHAR,
                   Types.BOOLEAN,
+                  Types.INTEGER,
+                  Types.BIGINT,
+                  Types.FLOAT
                 });
 
         int cnt = 0;
@@ -816,25 +816,25 @@ public class IoTDBAlignByDeviceIT {
   public void selectConstantTest() throws ClassNotFoundException {
     String[] retArray =
         new String[] {
-          "1,root.vehicle.d0,101,1101,null,null,null,'11',",
-          "2,root.vehicle.d0,10000,40000,2.22,null,null,'11',",
-          "3,root.vehicle.d0,null,null,3.33,null,null,'11',",
-          "4,root.vehicle.d0,null,null,4.44,null,null,'11',",
-          "50,root.vehicle.d0,10000,50000,null,null,null,'11',",
-          "60,root.vehicle.d0,null,null,null,aaaaa,null,'11',",
-          "70,root.vehicle.d0,null,null,null,bbbbb,null,'11',",
-          "80,root.vehicle.d0,null,null,null,ccccc,null,'11',",
-          "100,root.vehicle.d0,99,199,null,null,true,'11',",
-          "101,root.vehicle.d0,99,199,null,ddddd,null,'11',",
-          "102,root.vehicle.d0,80,180,10.0,fffff,null,'11',",
-          "103,root.vehicle.d0,99,199,null,null,null,'11',",
-          "104,root.vehicle.d0,90,190,null,null,null,'11',",
-          "105,root.vehicle.d0,99,199,11.11,null,null,'11',",
-          "106,root.vehicle.d0,99,null,null,null,null,'11',",
-          "1000,root.vehicle.d0,22222,55555,1000.11,null,null,'11',",
-          "946684800000,root.vehicle.d0,null,100,null,good,null,'11',",
-          "1,root.vehicle.d1,999,null,null,null,null,'11',",
-          "1000,root.vehicle.d1,888,null,null,null,null,'11',",
+          "1,root.vehicle.d0,null,null,101,1101,null,'11',",
+          "1,root.vehicle.d1,null,null,999,null,null,'11',",
+          "2,root.vehicle.d0,null,null,10000,40000,2.22,'11',",
+          "3,root.vehicle.d0,null,null,null,null,3.33,'11',",
+          "4,root.vehicle.d0,null,null,null,null,4.44,'11',",
+          "50,root.vehicle.d0,null,null,10000,50000,null,'11',",
+          "60,root.vehicle.d0,aaaaa,null,null,null,null,'11',",
+          "70,root.vehicle.d0,bbbbb,null,null,null,null,'11',",
+          "80,root.vehicle.d0,ccccc,null,null,null,null,'11',",
+          "100,root.vehicle.d0,null,true,99,199,null,'11',",
+          "101,root.vehicle.d0,ddddd,null,99,199,null,'11',",
+          "102,root.vehicle.d0,fffff,null,80,180,10.0,'11',",
+          "103,root.vehicle.d0,null,null,99,199,null,'11',",
+          "104,root.vehicle.d0,null,null,90,190,null,'11',",
+          "105,root.vehicle.d0,null,null,99,199,11.11,'11',",
+          "106,root.vehicle.d0,null,null,99,null,null,'11',",
+          "1000,root.vehicle.d0,null,null,22222,55555,1000.11,'11',",
+          "1000,root.vehicle.d1,null,null,888,null,null,'11',",
+          "946684800000,root.vehicle.d0,good,null,null,100,null,'11',",
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -850,15 +850,15 @@ public class IoTDBAlignByDeviceIT {
         List<Integer> actualIndexToExpectedIndexList =
             checkHeader(
                 resultSetMetaData,
-                "Time,Device,s0,s1,s2,s3,s4,'11'",
+                "Time,Device,s3,s4,s0,s1,s2,'11'",
                 new int[] {
                   Types.TIMESTAMP,
                   Types.VARCHAR,
+                  Types.VARCHAR,
+                  Types.BOOLEAN, /* constant column */
                   Types.INTEGER,
                   Types.BIGINT,
                   Types.FLOAT,
-                  Types.VARCHAR,
-                  Types.BOOLEAN, /* constant column */
                   Types.VARCHAR
                 });
 
@@ -889,6 +889,7 @@ public class IoTDBAlignByDeviceIT {
     String[] retArray =
         new String[] {
           "1,root.vehicle.d0,101,1101,null,null,null,null,",
+          "1,root.vehicle.d1,999,null,null,null,null,null,",
           "2,root.vehicle.d0,10000,40000,2.22,null,null,null,",
           "3,root.vehicle.d0,null,null,3.33,null,null,null,",
           "4,root.vehicle.d0,null,null,4.44,null,null,null,",
@@ -904,9 +905,8 @@ public class IoTDBAlignByDeviceIT {
           "105,root.vehicle.d0,99,199,11.11,null,null,null,",
           "106,root.vehicle.d0,99,null,null,null,null,null,",
           "1000,root.vehicle.d0,22222,55555,1000.11,null,null,null,",
-          "946684800000,root.vehicle.d0,null,100,null,good,null,null,",
-          "1,root.vehicle.d1,999,null,null,null,null,null,",
           "1000,root.vehicle.d1,888,null,null,null,null,null,",
+          "946684800000,root.vehicle.d0,null,100,null,good,null,null,",
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -1035,6 +1035,7 @@ public class IoTDBAlignByDeviceIT {
     String[] retArray =
         new String[] {
           "1,root.vehicle.d0,101,1101,'11',null,'22',null,null,null,",
+          "1,root.vehicle.d1,999,null,'11',null,'22',null,null,null,",
           "2,root.vehicle.d0,10000,40000,'11',2.22,'22',null,null,null,",
           "3,root.vehicle.d0,null,null,'11',3.33,'22',null,null,null,",
           "4,root.vehicle.d0,null,null,'11',4.44,'22',null,null,null,",
@@ -1050,9 +1051,8 @@ public class IoTDBAlignByDeviceIT {
           "105,root.vehicle.d0,99,199,'11',11.11,'22',null,null,null,",
           "106,root.vehicle.d0,99,null,'11',null,'22',null,null,null,",
           "1000,root.vehicle.d0,22222,55555,'11',1000.11,'22',null,null,null,",
-          "946684800000,root.vehicle.d0,null,100,'11',null,'22',null,good,null,",
-          "1,root.vehicle.d1,999,null,'11',null,'22',null,null,null,",
           "1000,root.vehicle.d1,888,null,'11',null,'22',null,null,null,",
+          "946684800000,root.vehicle.d0,null,100,'11',null,'22',null,good,null,",
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -1110,9 +1110,8 @@ public class IoTDBAlignByDeviceIT {
   public void selectConstantAndNonExistTestWithUnorderedDevice() throws ClassNotFoundException {
     String[] retArray =
         new String[] {
-          "1,root.vehicle.d1,null,999,null,'11',null,'11','22',null,null,999,",
-          "1000,root.vehicle.d1,null,888,null,'11',null,'11','22',null,null,888,",
           "1,root.vehicle.d0,null,101,null,'11',null,'11','22',null,null,101,",
+          "1,root.vehicle.d1,null,999,null,'11',null,'11','22',null,null,999,",
           "2,root.vehicle.d0,null,10000,null,'11',2.22,'11','22',null,null,10000,",
           "3,root.vehicle.d0,null,null,null,'11',3.33,'11','22',null,null,null,",
           "4,root.vehicle.d0,null,null,null,'11',4.44,'11','22',null,null,null,",
@@ -1128,6 +1127,7 @@ public class IoTDBAlignByDeviceIT {
           "105,root.vehicle.d0,null,99,null,'11',11.11,'11','22',null,null,99,",
           "106,root.vehicle.d0,null,99,null,'11',null,'11','22',null,null,99,",
           "1000,root.vehicle.d0,null,22222,null,'11',1000.11,'11','22',null,null,22222,",
+          "1000,root.vehicle.d1,null,888,null,'11',null,'11','22',null,null,888,",
           "946684800000,root.vehicle.d0,null,null,null,'11',null,'11','22',null,good,null,",
         };
 
@@ -1207,25 +1207,25 @@ public class IoTDBAlignByDeviceIT {
   public void selectWithRegularExpressionTest() throws ClassNotFoundException {
     String[] retArray =
         new String[] {
-          "1,root.vehicle.d0,101,1101,null,null,null,",
-          "2,root.vehicle.d0,10000,40000,2.22,null,null,",
-          "3,root.vehicle.d0,null,null,3.33,null,null,",
-          "4,root.vehicle.d0,null,null,4.44,null,null,",
-          "50,root.vehicle.d0,10000,50000,null,null,null,",
-          "60,root.vehicle.d0,null,null,null,aaaaa,null,",
-          "70,root.vehicle.d0,null,null,null,bbbbb,null,",
-          "80,root.vehicle.d0,null,null,null,ccccc,null,",
-          "100,root.vehicle.d0,99,199,null,null,true,",
-          "101,root.vehicle.d0,99,199,null,ddddd,null,",
-          "102,root.vehicle.d0,80,180,10.0,fffff,null,",
-          "103,root.vehicle.d0,99,199,null,null,null,",
-          "104,root.vehicle.d0,90,190,null,null,null,",
-          "105,root.vehicle.d0,99,199,11.11,null,null,",
-          "106,root.vehicle.d0,99,null,null,null,null,",
-          "1000,root.vehicle.d0,22222,55555,1000.11,null,null,",
-          "946684800000,root.vehicle.d0,null,100,null,good,null,",
-          "1,root.vehicle.d1,999,null,null,null,null,",
-          "1000,root.vehicle.d1,888,null,null,null,null,",
+          "1,root.vehicle.d0,null,null,101,1101,null,",
+          "1,root.vehicle.d1,null,null,999,null,null,",
+          "2,root.vehicle.d0,null,null,10000,40000,2.22,",
+          "3,root.vehicle.d0,null,null,null,null,3.33,",
+          "4,root.vehicle.d0,null,null,null,null,4.44,",
+          "50,root.vehicle.d0,null,null,10000,50000,null,",
+          "60,root.vehicle.d0,aaaaa,null,null,null,null,",
+          "70,root.vehicle.d0,bbbbb,null,null,null,null,",
+          "80,root.vehicle.d0,ccccc,null,null,null,null,",
+          "100,root.vehicle.d0,null,true,99,199,null,",
+          "101,root.vehicle.d0,ddddd,null,99,199,null,",
+          "102,root.vehicle.d0,fffff,null,80,180,10.0,",
+          "103,root.vehicle.d0,null,null,99,199,null,",
+          "104,root.vehicle.d0,null,null,90,190,null,",
+          "105,root.vehicle.d0,null,null,99,199,11.11,",
+          "106,root.vehicle.d0,null,null,99,null,null,",
+          "1000,root.vehicle.d0,null,null,22222,55555,1000.11,",
+          "1000,root.vehicle.d1,null,null,888,null,null,",
+          "946684800000,root.vehicle.d0,good,null,null,100,null,",
         };
 
     Class.forName(Config.JDBC_DRIVER_NAME);
@@ -1241,15 +1241,15 @@ public class IoTDBAlignByDeviceIT {
         List<Integer> actualIndexToExpectedIndexList =
             checkHeader(
                 resultSetMetaData,
-                "Time,Device,s0,s1,s2,s3,s4",
+                "Time,Device,s3,s4,s0,s1,s2",
                 new int[] {
                   Types.TIMESTAMP,
                   Types.VARCHAR,
+                  Types.VARCHAR,
+                  Types.BOOLEAN,
                   Types.INTEGER,
                   Types.BIGINT,
-                  Types.FLOAT,
-                  Types.VARCHAR,
-                  Types.BOOLEAN
+                  Types.FLOAT
                 });
 
         int cnt = 0;
